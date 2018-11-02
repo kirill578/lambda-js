@@ -11,7 +11,7 @@ const PanelContainer = styled.div`
   margin: 10px
 `;
 
-const githubLink = "https://github.com/kirill578/js-api-bin";
+
 
 export const EditorRaw = ({endpoints, onSave, onAdd, onDelete, onMethodChange, onCodeChange, onBaseUrlChange, onClone, apiUrl}) => {
   return (
@@ -24,7 +24,6 @@ export const EditorRaw = ({endpoints, onSave, onAdd, onDelete, onMethodChange, o
             <Button icon="cloud-upload" intent='PRIMARY' large='true' text="Save" onClick={onSave} />
             <Button icon="add" large='true' text="Add Endpoint" onClick={onAdd} />
             <Button icon="duplicate" large='true' text="Clone To New URL" onClick={onClone} />
-            <Button icon="git-repo" large='true' text="Github Repo" onClick={()=> window.open(githubLink, "_blank")} />
           </ControlGroup>
         </PanelContainer>
 

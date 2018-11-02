@@ -7,6 +7,7 @@ import 'normalize.css/normalize.css';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import Logger from "./Logger";
+import Header from "./header";
 
 const Container = styled.div`
   position: absolute;
@@ -27,17 +28,12 @@ const ContentContainer = styled.div`
 `;
 
 
-class App extends Component {
-  render() {
-    return (
-        <Container>
-          <ContentContainer>
-            <Editor />
-          </ContentContainer>
-          <Logger />
-        </Container>
-    );
-  }
-}
+const App = () => <Container>
+  <Header />
+  <ContentContainer>
+    <Editor />
+  </ContentContainer>
+  <Logger />
+</Container>;
 
 export default App;
