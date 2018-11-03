@@ -3,7 +3,8 @@ import styled from 'styled-components';
 import {compose} from "recompose";
 import withApiId from "./withApiId";
 const io = require('socket.io-client');
-
+const processString = require('react-process-string');
+const urlRegex = require('url-regex')({exact: false, strict: true});
 
 const LogContainer = styled.div`
   background: #383732;
@@ -20,7 +21,6 @@ const LogContainer = styled.div`
 
 const Line = styled.div`
   color: #82ff0b;
-  height: 22px;
   line-height: 22px;
   font-weight: bold;
   font-family: "Fira Mono","DejaVu Sans Mono",Menlo,Consolas,"Liberation Mono",Monaco,"Lucida Console",monospace;
@@ -31,6 +31,27 @@ const ScrollView = styled.div`
   overflow-y: auto;
 `;
 
+const Url = styled.a`
+  color: #FFFFFF;
+  
+  &:hover {
+    color: #FFFFFF;
+  }
+`;
+
+
+const CustomLine = ({str}) =>
+    <Line>
+      {processString(config)(str)}
+    </Line>;
+
+
+let config = [{
+  regex: urlRegex,
+  fn: (key, result) => <span key={key}>
+       <Url target="_blank" href={result[0]}>{result[0]}</Url>
+   </span>
+}];
 
 class LoggerRaw extends Component {
 
@@ -85,7 +106,7 @@ class LoggerRaw extends Component {
     return (
         <ScrollView>
           <LogContainer>
-            {this.state.log.map((item) => <Line ref={(el) => { this.messagesEnd = el; }}>{item}</Line>)}
+            {this.state.log.map((item) => <CustomLine ref={(el) => { this.messagesEnd = el; }} str={item}/>)}
           </LogContainer>
         </ScrollView>
     );

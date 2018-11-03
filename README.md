@@ -1,3 +1,7 @@
+# Hosted
+
+`http://lambda-js.com`
+
 # Running locally
 * `yarn`
 * setup a redis instance

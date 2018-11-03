@@ -2,6 +2,7 @@ import React from 'react';
 import styled from "styled-components";
 import IconLogo from "./icon";
 import {Icon} from "@blueprintjs/core/lib/cjs/components/icon/icon";
+import {branch, compose, renderNothing, withState} from "recompose";
 
 const TopBar = styled.div`
   display: flex;
@@ -12,6 +13,7 @@ const TopBar = styled.div`
   height: 94px;
   line-height: 1.3em;
   @media (max-width: 450px) {
+    flex-direction: column;
     height: auto;
     line-height: 1.5em;
   }
@@ -52,8 +54,25 @@ const Link = styled.div`
 
 const githubLink = "https://github.com/kirill578/js-api-bin";
 
-export default () => <TopBar>
-  <IconLogo />
+
+const LogoContainer = styled.div`
+  align-self: flex-start; 
+  @media (max-width: 450px) {
+    align-self: center; 
+  }
+`;
+
+const RightCornor = styled(Icon)`
+  position: absolute;
+  right: 5px;
+  top: 5px;
+`;
+
+const RawLogger = ({setShow}) => <TopBar>
+  <RightCornor icon="small-cross" iconSize={20} color={'#FFF'} onClick={() => setShow(false)}/>
+  <LogoContainer>
+    <IconLogo />
+  </LogoContainer>
   <Description>
     <Title>Build basic API in seconds</Title>
     <Text>Click <Bold>save</Bold>, and hit the URLs in the console</Text>
@@ -65,3 +84,8 @@ export default () => <TopBar>
     <Link onClick={() => window.open(githubLink, "_blank")}><Bold>Source</Bold> is available on <Icon icon="git-branch" color="#FFFFFF" /> GitHub</Link>
   </Description>
 </TopBar>;
+
+export default compose(
+  withState('show', 'setShow', true),
+  branch(({show}) => !show, renderNothing)
+)(RawLogger);

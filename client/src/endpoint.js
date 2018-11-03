@@ -47,7 +47,7 @@ export const Endpoint = ({code, method, baseUrl, onCodeChange, onMethodChange, o
               showGutter={false}
               highlightActiveLine={false}
               value={code}
-              width={'400px'}
+              width={'auto'}
               setOptions={{
                 autoScrollEditorIntoView: true,
                 maxLines: 30,
