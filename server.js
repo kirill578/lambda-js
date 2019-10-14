@@ -151,6 +151,9 @@ const multiHandler = asyncMiddleware(async (req, res) => {
 
   try {
     context.db = await getDb(apiId);
+    if (!context.db) {
+      context.db = {};
+    }
   } catch (e) {
     context.db = {};
   }
