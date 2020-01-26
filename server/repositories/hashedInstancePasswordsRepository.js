@@ -7,7 +7,11 @@ class HashedInstancePasswordRepository extends BaseRedisRepository {
     }
 
     setHashedPassword(instanceId, hashedPassword) {
-        this.redisClient.set(instanceId + "_hashed_password", hashedPassword);
+        if (hashedPassword === null) {
+            this.redisClient.del(instanceId + "_hashed_password");
+        } else {
+            this.redisClient.set(instanceId + "_hashed_password", hashedPassword);
+        }
     }
 
     async getHashedPassword(instanceId) {

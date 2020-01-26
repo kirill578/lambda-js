@@ -13,7 +13,7 @@ const PanelContainer = styled.div`
 
 
 
-export const EditorRaw = ({endpoints, onSave, onAdd, onDelete, onMethodChange, onCodeChange, onBaseUrlChange, onClone, apiUrl, onDownloadAccessLog}) => {
+export const EditorRaw = ({endpoints, onSave, onAdd, onDelete, onMethodChange, onCodeChange, onBaseUrlChange, onClone, apiUrl, onDownloadAccessLog, onPasswordChange, password}) => {
   return (
       <div>
         <PanelContainer>
@@ -21,15 +21,25 @@ export const EditorRaw = ({endpoints, onSave, onAdd, onDelete, onMethodChange, o
             <input type="text" className="bp3-input" placeholder="base url" value={apiUrl} />
           </div>
           <ControlGroup fill={false} vertical={false}>
-            <Button icon="cloud-upload" intent='PRIMARY' large='true' text="Save" onClick={onSave} />
-            <Button icon="add" large='true' text="Add Endpoint" onClick={onAdd} />
-            <Button icon="duplicate" large='true' text="Clone To New URL" onClick={onClone} />
-            <Button icon="duplicate" large='true' text="Generate CSV Access Log Report" onClick={onDownloadAccessLog} />
+            <Button icon="cloud-upload" intent='PRIMARY' large='true' text="Save And Deploy" onClick={onSave} />
             <InputGroup
+              disabled={password === null}
               large='true'
-              placeholder="Set password..."
-              type="password"
+              onChange={(event) => onPasswordChange(event.target.value)}
+              value={password === null ? '' : password}
+              placeholder="Password"
+              type="text"
             />
+            { password !== null ?
+              <Button icon="unlock" large='true' text="Remove Password" intent='warning' onClick={() => onPasswordChange(null)} />
+              :
+              <Button icon="lock" large='true' text="Set Password" onClick={() => onPasswordChange('')} />
+            }
+          </ControlGroup>
+          <ControlGroup fill={false} vertical={false} style={{marginTop: '10px'}} >
+            <Button icon="add" text="Add Endpoint" onClick={onAdd} />
+            <Button icon="duplicate" text="Clone To New URL" onClick={onClone} />
+            <Button icon="duplicate" text="Generate CSV Access Log Report" onClick={onDownloadAccessLog} />
           </ControlGroup>
         </PanelContainer>
 
@@ -49,17 +59,44 @@ export const EditorRaw = ({endpoints, onSave, onAdd, onDelete, onMethodChange, o
     );
 };
 
+const getStoredPasswordByApiId = (apiId) => {
+  const pwd = window.localStorage['password_' + apiId];
+  if (pwd === undefined) {
+    return null;
+  } else {
+    return pwd;
+  }
+}
+const storedPasswordByApiId = (apiId, password) => window.localStorage['password_' + apiId] = password;
+const deletePasswordByApiId = (apiId) => window.localStorage.removeItem('password_' + apiId);
+
 export const Editor = compose(
     withApiId,
+    withState('password', 'setPassword', ({apiId}) => getStoredPasswordByApiId(apiId)),
     withState('endpoints', 'setEndpoints', null),
     withProps(({apiId}) => ({
       apiUrl: window.location.protocol + '//' + window.location.host + '/api/' + apiId
     })),
     lifecycle({
       async componentDidMount() {
-        const response = await fetch(new Request('/config/' + this.props.apiId + '.json'));
+        const currentPassword = getStoredPasswordByApiId(this.props.apiId);
+        const response = await fetch(new Request('/config/' + this.props.apiId + '.json', {
+          method: 'GET',
+          headers: {
+            "Content-Type": "application/json",
+            'instance-password': currentPassword,
+          },
+        }));
         if (response.status === 403) {
-          console.log('password needed');
+          const pwd = prompt("This backend instance requires a password, please enter it", "");
+          if (pwd != null) {
+            if (pwd === '') {
+              deletePasswordByApiId(this.props.apiId);
+            } else {
+              storedPasswordByApiId(this.props.apiId, pwd);
+            }
+            window.location.reload();
+          }
         } else {
           const json = await response.json();
           console.log(json);
@@ -69,6 +106,7 @@ export const Editor = compose(
     }),
     branch(({endpoints}) => !endpoints, renderNothing),
     withHandlers({
+      onPasswordChange: ({setPassword}) => (text) => setPassword(text),
       onAdd: ({setEndpoints}) => () => setEndpoints(endpoints => [
         ...endpoints,
         {
@@ -96,14 +134,38 @@ export const Editor = compose(
               window.location = `/access_log/${apiId}.csv`;
           }
       },
-      onSave: ({endpoints, apiId}) => async () => {
-        await fetch('/config/' + apiId + '.json', {
+      onSave: ({endpoints, apiId, password}) => async () => {
+        const currentPassword = getStoredPasswordByApiId(apiId);
+        let newPasswordHeaders = {};
+        if (currentPassword !== password) {
+          if (password === null) {
+            newPasswordHeaders = {
+              'delete-password': 'true'
+            }
+          } else {
+            newPasswordHeaders = {
+              'new-password': password
+            }
+          }
+        }
+        const response = await fetch('/config/' + apiId + '.json', {
           method: 'POST',
           body: JSON.stringify(endpoints),
           headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            'instance-password': currentPassword,
+            ...newPasswordHeaders
           },
-        })},
+        });
+
+        if (response.status === 200) {
+            if (password === null) {
+              deletePasswordByApiId(apiId)
+            } else {
+              storedPasswordByApiId(apiId, password)
+            }
+        }
+      },
       onClone: ({endpoints, updateApiId}) => async () => {
         const apiId = generateRandomApiId();
         await fetch('/config/' + apiId + '.json', {

@@ -52,7 +52,6 @@ export const registerBackendConfigurationEndpoints = (app) => {
 
 const verifyPasswordIfNeeded = async (apiId, req, res) => {
     const hashedPassword = await hashedInstancePasswordRepository.getHashedPassword(apiId);
-    console.log('the password: ' + hashedPassword);
     if (hashedPassword) {
         const password = req.headers['instance-password'];
         if (password) {
@@ -71,8 +70,11 @@ const verifyPasswordIfNeeded = async (apiId, req, res) => {
 
 const updatePasswordIfNeeded = async (apiId, req) => {
     const newPassword = req.headers['new-password'];
+    const deletePassword = req.headers['delete-password'] === 'true';
     if (newPassword) {
         const newHashedPassword = sha1(newPassword);
         hashedInstancePasswordRepository.setHashedPassword(apiId, newHashedPassword);
+    } else if (deletePassword) {
+        hashedInstancePasswordRepository.setHashedPassword(apiId, null);
     }
 }
