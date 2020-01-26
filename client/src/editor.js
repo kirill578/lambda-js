@@ -44,8 +44,9 @@ export const EditorRaw = ({endpoints, onSave, onAdd, onDelete, onMethodChange, o
         </PanelContainer>
 
         <div className="editor">
-          {endpoints.map(item =>
+          {endpoints.map((item, index) =>
               <Endpoint
+                  key={index}
                   code={item.code}
                   method={item.method}
                   baseUrl={item.baseUrl}
@@ -99,7 +100,6 @@ export const Editor = compose(
           }
         } else {
           const json = await response.json();
-          console.log(json);
           this.props.setEndpoints(json);
         }
       }

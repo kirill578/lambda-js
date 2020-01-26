@@ -1,13 +1,14 @@
 import React, {Component} from 'react';
 import styled from 'styled-components';
 import {compose} from "recompose";
+import { InputGroup } from "@blueprintjs/core";
 import withApiId from "./withApiId";
 const io = require('socket.io-client');
 const processString = require('react-process-string');
 const urlRegex = require('url-regex')({exact: false, strict: true});
 
+
 const LogContainer = styled.div`
-  background: #383732;
   
   height: auto;
   width: 100%;
@@ -40,6 +41,21 @@ const Url = styled.a`
 `;
 
 
+const LoggerContainer = styled.div`
+  background: #383732;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+`;
+
+const InputContainer = styled.div`
+  padding: 10px;
+  width: 200px;
+  align-self: flex-end;
+`;
+
+
+
 const CustomLine = ({str}) =>
     <Line>
       {processString(config)(str)}
@@ -58,7 +74,10 @@ class LoggerRaw extends Component {
   constructor() {
     super();
     this.fifo = [];
-    this.state = {log: this.fifo};
+    this.state = {
+      log: this.fifo,
+      filter: null
+    };
     this.pushLine = this.pushLine.bind(this);
   }
 
@@ -102,11 +121,25 @@ class LoggerRaw extends Component {
 
   render() {
     return (
-        <ScrollView>
-          <LogContainer>
-            {this.state.log.map((item) => <CustomLine ref={(el) => { this.messagesEnd = el; }} str={item}/>)}
-          </LogContainer>
-        </ScrollView>
+        <LoggerContainer>
+          <InputContainer>
+            <InputGroup
+                onChange={(event) => this.setState({
+                  filter: event.target.value === '' ? null : event.target.value
+                })}
+                value={this.state.filter === null ? '' : this.state.filter}
+                placeholder="filter logs"
+                type="text"
+              />
+          </InputContainer>
+          <ScrollView>
+            <LogContainer>
+              {this.state.log
+                .filter(item => this.state.filter === null ? true : item.includes(this.state.filter))
+                .map((item, idx) => <CustomLine key={idx} ref={(el) => { this.messagesEnd = el; }} str={item}/>)}
+            </LogContainer>
+          </ScrollView>
+        </LoggerContainer>
     );
   }
 }
