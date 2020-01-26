@@ -1,6 +1,7 @@
 
 import { asyncMiddleware } from './utils';
-import { backendInstanceRepository } from './repositories'
+import { backendInstanceRepository } from './repositories';
+import { logAccessEvent } from './accessLogger';
 import { createBaseConfig } from './baseConfig';
 import { sendRemoteLog } from './remoteLogger';
 
@@ -14,6 +15,7 @@ export const registerBackendConfigurationEndpoints = (app) => {
         backendInstanceRepository.saveInstance(apiId, req.body);
         res.status(200).send({});
 
+        logAccessEvent(apiId, req);
 
         sendRemoteLog(apiId, '== Endpoints updated ==');
         req.body.forEach((endpoint) => {
@@ -30,6 +32,7 @@ export const registerBackendConfigurationEndpoints = (app) => {
             backendInstanceRepository.saveInstance(apiId, config);
         }
         res.send(config);
+        logAccessEvent(apiId, req);
     }));
 
 }

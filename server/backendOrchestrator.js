@@ -2,6 +2,7 @@ import { VM } from 'vm2';
 import { backendInstanceRepository, backendInstanceStorageRepository } from './repositories'
 import {asyncMiddleware} from './utils';
 import { sendRemoteLog } from './remoteLogger';
+import { logAccessEvent } from './accessLogger';
 
 const matcher = /^\/api\/([a-z-]+)(\/?[^?]*)\??.*/;
 
@@ -17,6 +18,8 @@ const orchestrationHandler = asyncMiddleware(async (req, res) => {
   
     const apiId = req.params[0];
     const baseUrl = req.params[1];
+
+    logAccessEvent(apiId, req);
   
     const endpoints = await backendInstanceRepository.getInstanceById(apiId);
     if (!endpoints) {
@@ -67,4 +70,5 @@ const orchestrationHandler = asyncMiddleware(async (req, res) => {
       res.status(500).send();
       return;
     }
+
   });

@@ -13,7 +13,7 @@ const PanelContainer = styled.div`
 
 
 
-export const EditorRaw = ({endpoints, onSave, onAdd, onDelete, onMethodChange, onCodeChange, onBaseUrlChange, onClone, apiUrl}) => {
+export const EditorRaw = ({endpoints, onSave, onAdd, onDelete, onMethodChange, onCodeChange, onBaseUrlChange, onClone, apiUrl, onDownloadAccessLog}) => {
   return (
       <div>
         <PanelContainer>
@@ -24,6 +24,7 @@ export const EditorRaw = ({endpoints, onSave, onAdd, onDelete, onMethodChange, o
             <Button icon="cloud-upload" intent='PRIMARY' large='true' text="Save" onClick={onSave} />
             <Button icon="add" large='true' text="Add Endpoint" onClick={onAdd} />
             <Button icon="duplicate" large='true' text="Clone To New URL" onClick={onClone} />
+            <Button icon="duplicate" large='true' text="Generate CSV Access Log Report" onClick={onDownloadAccessLog} />
           </ControlGroup>
         </PanelContainer>
 
@@ -80,6 +81,13 @@ export const Editor = compose(
       onBaseUrlChange: ({setEndpoints}) => (endpoint, value) =>
           setEndpoints(endpoints => endpoints.map(mapped =>
               mapped.id === endpoint.id ? {...endpoint, baseUrl: value} : mapped)),
+      onDownloadAccessLog: ({apiId}) => () => {
+          if (window.location.host.includes("localhost")) {
+              window.location = `http://localhost:5000/access_log/${apiId}.csv`;
+          } else {
+              window.location = `/access_log/${apiId}.csv`;
+          }
+      },
       onSave: ({endpoints, apiId}) => async () => {
         await fetch('/config/' + apiId + '.json', {
           method: 'POST',
