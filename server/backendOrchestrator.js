@@ -1,5 +1,5 @@
 import { VM } from 'vm2';
-import {getConfig, getDb, saveDb} from './db';
+import { backendInstanceRepository, backendInstanceStorageRepository } from './repositories'
 import {asyncMiddleware} from './utils';
 import { sendRemoteLog } from './remoteLogger';
 
@@ -18,7 +18,7 @@ const orchestrationHandler = asyncMiddleware(async (req, res) => {
     const apiId = req.params[0];
     const baseUrl = req.params[1];
   
-    const endpoints = await getConfig(apiId);
+    const endpoints = await backendInstanceRepository.getInstanceById(apiId);
     if (!endpoints) {
       res.status(502).send({error: 'base url is not defined'});
       return;
@@ -42,7 +42,7 @@ const orchestrationHandler = asyncMiddleware(async (req, res) => {
     };
   
     try {
-      context.db = await getDb(apiId);
+      context.db = await backendInstanceStorageRepository.getStorageByInstanceId(apiId);
       if (!context.db) {
         context.db = {};
       }
@@ -59,7 +59,7 @@ const orchestrationHandler = asyncMiddleware(async (req, res) => {
       const output = vm.run("const func = function (db, params, body, console) { "
           + endpoint.code + " }; func(db, params, body, console)");
   
-      saveDb(apiId, context.db);
+      backendInstanceStorageRepository.saveStorage(apiId, context.db);
   
       res.send(JSON.stringify(output));
     } catch (e) {
