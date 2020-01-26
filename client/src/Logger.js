@@ -55,8 +55,6 @@ let config = [{
 
 class LoggerRaw extends Component {
 
-
-
   constructor() {
     super();
     this.fifo = [];
