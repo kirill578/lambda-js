@@ -1,6 +1,6 @@
 import React  from 'react';
 
-import { ControlGroup, Button } from "@blueprintjs/core";
+import { ControlGroup, Button, InputGroup } from "@blueprintjs/core";
 import {Endpoint} from "./endpoint";
 import {compose, withState, withHandlers, branch, renderNothing, lifecycle, withProps} from "recompose";
 import * as uuid from "uuid";
@@ -25,6 +25,11 @@ export const EditorRaw = ({endpoints, onSave, onAdd, onDelete, onMethodChange, o
             <Button icon="add" large='true' text="Add Endpoint" onClick={onAdd} />
             <Button icon="duplicate" large='true' text="Clone To New URL" onClick={onClone} />
             <Button icon="duplicate" large='true' text="Generate CSV Access Log Report" onClick={onDownloadAccessLog} />
+            <InputGroup
+              large='true'
+              placeholder="Set password..."
+              type="password"
+            />
           </ControlGroup>
         </PanelContainer>
 
@@ -52,11 +57,14 @@ export const Editor = compose(
     })),
     lifecycle({
       async componentDidMount() {
-
         const response = await fetch(new Request('/config/' + this.props.apiId + '.json'));
-        const json = await response.json();
-        console.log(json);
-        this.props.setEndpoints(json);
+        if (response.status === 403) {
+          console.log('password needed');
+        } else {
+          const json = await response.json();
+          console.log(json);
+          this.props.setEndpoints(json);
+        }
       }
     }),
     branch(({endpoints}) => !endpoints, renderNothing),
