@@ -74,9 +74,9 @@ const RawLogger = ({setShow}) => <TopBar>
     <IconLogo />
   </LogoContainer>
   <Description>
-    <Title>Build basic API in seconds</Title>
-    <Text>Click <Bold>save</Bold>, and hit the URLs in the console</Text>
-    <Text>Persist data with <Bold>db['name'] = bob</Bold></Text>
+    <Title>Build a Backend in seconds</Title>
+    <Text>Click <Bold>Save And Deploy</Bold>, and hit the URLs in the console</Text>
+    <Text>Persist data with <Bold>db['name'] = "bob"</Bold></Text>
     <Text>Log via <Bold>console.log('Hello world')</Bold></Text>
     <Text>Access <Bold>?name=bob</Bold> as <Bold>params.name</Bold></Text>
     <Text>Request <Bold>body</Bold> is parsed as JSON object</Text>

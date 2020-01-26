@@ -1,6 +1,6 @@
 # Hosted
 
-`http://lambda-js.com`
+`http://js-api-bin.herokuapp.com/`
 
 # Running locally
 * `yarn`
