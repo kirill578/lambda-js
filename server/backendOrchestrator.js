@@ -34,41 +34,52 @@ const orchestrationHandler = asyncMiddleware(async (req, res) => {
       return;
     }
   
-    const context = {
-      params: req.query,
-      body: req.body,
-      console: {
-        log: (msg) => {
-          sendRemoteLog(apiId, msg);
-        }
-      }
-    };
-  
+    let db;
     try {
-      context.db = await backendInstanceStorageRepository.getStorageByInstanceId(apiId);
-      if (!context.db) {
-        context.db = {};
+      db = await backendInstanceStorageRepository.getStorageByInstanceId(apiId);
+      if (!db) {
+        db = {};
       }
     } catch (e) {
-      context.db = {};
+      db = {};
     }
   
-    const vm = new VM({
-      timeout: 100,
-      sandbox: context
-    });
-  
     try {
-      const output = vm.run("const func = function (db, params, body, console) { "
-          + endpoint.code + " }; func(db, params, body, console)");
-  
-      backendInstanceStorageRepository.saveStorage(apiId, context.db);
+      const output = executeCode(endpoint.code, db, req.query, req.body, (msg) => {
+        sendRemoteLog(apiId, msg);
+      });
+      
+      backendInstanceStorageRepository.saveStorage(apiId, db);
   
       res.send(JSON.stringify(output));
     } catch (e) {
+      console.error(e);
       sendRemoteLog(apiId, e.toString());
       res.status(500).send();
       return;
     }
 
   });
+
+
+export const executeCode = (code, db, params, body, onLog) => {
+  const context = {
+    params,
+    body,
+    db,
+    console: {
+      log: onLog
+    }
+  };
+
+
+  const vm = new VM({
+    timeout: 100,
+    sandbox: context
+  });
+
+  const output = vm.run("const func = function (db, params, body, console) { "
+          + code + " }; func(db, params, body, console)");
+
+  return output;
+}

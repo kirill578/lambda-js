@@ -28,7 +28,7 @@ return value;`
 `console.log('Request to update id=' + params.id + ' with ' + JSON.stringify(body));
 
 db[params.id] = {...db[params.id], ...body};
-console.log('Returning updated: ' + JSON.stringify(db[params.id]);
+console.log('Returning updated: ' + JSON.stringify(db[params.id]));
   
 return db[params.id];`
   }, {
