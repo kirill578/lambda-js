@@ -43,4 +43,15 @@ describe('Third party code execution', function() {
         assert.equal('hello', output);
     });
 
+    it('code does not have access to node process', async function() {
+        let didError = false;
+        try {
+            executeCode(`process.exit()`, {}, {}, {}, () => {});
+        } catch (e) {
+            didError = true;
+            assert.equal(e.message, "process is not defined");
+        }
+        assert.equal(true, didError);
+    });
+
 });
