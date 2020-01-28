@@ -1,8 +1,8 @@
-import { VM } from 'vm2';
 import { backendInstanceRepository, backendInstanceStorageRepository } from './repositories'
 import {asyncMiddleware} from './utils';
 import { sendRemoteLog } from './remoteLogger';
 import { logAccessEvent } from './accessLogger';
+import { executeCode } from './codeExecutor';
 
 const matcher = /^\/api\/([a-z-]+)(\/?[^?]*)\??.*/;
 
@@ -62,24 +62,3 @@ const orchestrationHandler = asyncMiddleware(async (req, res) => {
   });
 
 
-export const executeCode = (code, db, params, body, onLog) => {
-  const context = {
-    params,
-    body,
-    db,
-    console: {
-      log: onLog
-    }
-  };
-
-
-  const vm = new VM({
-    timeout: 100,
-    sandbox: context
-  });
-
-  const output = vm.run("const func = function (db, params, body, console) { "
-          + code + " }; func(db, params, body, console)");
-
-  return output;
-}

@@ -8,9 +8,11 @@
     "dev-heroku": "REDISCLOUD_URL=$(heroku config:get REDISCLOUD_URL -a js-api-bin) yarn dev",
     "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn client\"",
     "start": "babel-node server/index.js",
+    "test": "mocha --require @babel/register",
     "heroku-postbuild": "cd client && yarn install && yarn install --only=dev --no-shrinkwrap && yarn build"
   },
   "dependencies": {
+    "mocha": "7.0.1",
     "js-sha1": "0.6.0",
     "body-parser": "^1.18.3",
     "eslint": "5.6.0",
